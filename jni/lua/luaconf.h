@@ -18,7 +18,14 @@
 ** ===================================================================
 */
 
+#if defined(__BIONIC__)
+#define LUA_ANDROID
+#endif
 
+#define LUA_USE_LCONV
+#ifdef LUA_ANDROID
+#undef LUA_USE_LCONV
+#endif
 /*
 @@ LUA_ANSI controls the use of non-ansi features.
 ** CHANGE it (define it) if you want Lua to avoid the use of any
