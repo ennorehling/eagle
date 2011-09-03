@@ -20,9 +20,12 @@ LOCAL_MODULE    := native-activity
 LOCAL_SRC_FILES := main.c \
 	lua/lapi.c lua/lcode.c lua/ldebug.c lua/ldo.c lua/ldump.c lua/lfunc.c lua/lgc.c lua/llex.c lua/lmem.c \
 	lua/lobject.c lua/lopcodes.c lua/lparser.c lua/lstate.c lua/lstring.c lua/ltable.c lua/ltm.c  \
-	lua/lundump.c lua/lvm.c lua/lzio.c
+	lua/lundump.c lua/lvm.c lua/lzio.c \
+	lua/lauxlib.c lua/lbaselib.c lua/ldblib.c lua/liolib.c lua/lmathlib.c lua/loslib.c lua/ltablib.c \
+	lua/lstrlib.c lua/loadlib.c lua/linit.c
 LOCAL_LDLIBS    := -llog -landroid -lEGL -lGLESv1_CM
 LOCAL_STATIC_LIBRARIES := android_native_app_glue
+LOCAL_CFLAGS    += -Ijni/lua
 
 include $(BUILD_SHARED_LIBRARY)
 
