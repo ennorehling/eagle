@@ -27,6 +27,9 @@
 #include <android/log.h>
 #include <android_native_app_glue.h>
 
+#include <lua.h>
+#include <lauxlib.h>
+
 #define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "native-activity", __VA_ARGS__))
 #define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "native-activity", __VA_ARGS__))
 
@@ -58,6 +61,21 @@ struct engine {
     struct saved_state state;
 };
 
+static lua_State * L = 0;
+
+static void engine_lua_call(struct engine* engine)
+{
+    lua_Number result;
+    if (!L) {
+        L = lua_open();
+        luaL_dostring(L, "function main() return 0.1 end");
+    }
+    lua_getfield(L, LUA_GLOBALSINDEX, "main"); 
+    lua_call(L, 0, 1);
+    result = lua_tonumber(L, -1);
+    engine->state.angle += result;
+//    engine->state.angle += .01f;
+}
 /**
  * Initialize an EGL context for the current display.
  */
@@ -294,8 +312,9 @@ void android_main(struct android_app* state) {
         }
 
         if (engine.animating) {
+            engine_lua_call(&engine);
             // Done with events; draw next animation frame.
-            engine.state.angle += .01f;
+            // engine.state.angle += .01f;
             if (engine.state.angle > 1) {
                 engine.state.angle = 0;
             }
