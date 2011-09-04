@@ -68,7 +68,7 @@ static void engine_lua_call(struct engine* engine)
     lua_Number result;
     if (!L) {
         L = lua_open();
-        luaL_dostring(L, "function main() return 0.1 end");
+        luaL_dostring(L, "function main() return 0.01 end");
     }
     lua_getfield(L, LUA_GLOBALSINDEX, "main"); 
     lua_call(L, 0, 1);
