@@ -67,8 +67,24 @@ static void engine_lua_call(struct engine* engine)
 {
     lua_Number result;
     if (!L) {
+        AAssetManager* assetManager = engine->app->activity->assetManager;
+        AAsset* asset = AAssetManager_open(assetManager, "scripts/main.lua", AASSET_MODE_UNKNOWN);
+        off_t start, length;
+        int fd = AAsset_openFileDescriptor(asset, &start, &length);
+        
+        if (fd<0) {
+            LOGW("COULD NOT OPEN FILE DESCRIPTOR");
+        }
+        off_t bufferSize = AAsset_getLength(asset);
+        char * buffer = malloc(bufferSize+1);
+        AAsset_read(asset, buffer, bufferSize);
+        buffer[bufferSize] = 0;
+        LOGI(buffer);
+        AAsset_close(asset);
+
         L = lua_open();
-        luaL_dostring(L, "function main() return 0.01 end");
+        luaL_dostring(L, buffer);
+//        luaL_dofile(L, "assets/scripts/main.lua");
     }
     lua_getfield(L, LUA_GLOBALSINDEX, "main"); 
     lua_call(L, 0, 1);
