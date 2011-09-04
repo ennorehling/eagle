@@ -6,7 +6,7 @@
         android:versionName="1.0">
 
     <!-- This is the platform API where NativeActivity was introduced. -->
-    <uses-sdk android:minSdkVersion="8" />
+    <uses-sdk android:minSdkVersion="9" />
 
     <!-- This .apk has no Java code itself, so set hasCode to false. -->
     <application android:label="@string/app_name" android:hasCode="false">
@@ -27,5 +27,10 @@
         </activity>
     </application>
 
+    <supports-screens android:resizeable="true"
+                  android:smallScreens="true"
+                  android:normalScreens="true"
+                  android:largeScreens="true"
+                  android:xlargeScreens="true"/>
 </manifest> 
 <!-- END_INCLUDE(manifest) -->
