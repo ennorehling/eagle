@@ -63,28 +63,31 @@ struct engine {
 
 static lua_State * L = 0;
 
+static int engine_lua_load(struct engine* engine, const char * filename)
+{
+    AAssetManager* assetManager = engine->app->activity->assetManager;
+    AAsset* asset = AAssetManager_open(assetManager, filename, AASSET_MODE_UNKNOWN);
+    off_t start, length;
+    int fd = AAsset_openFileDescriptor(asset, &start, &length);
+    
+    if (fd<0) {
+        LOGW("COULD NOT OPEN FILE DESCRIPTOR");
+    }
+    const char * buffer = (const char *)AAsset_getBuffer(asset);
+    size_t sz = (size_t)AAsset_getLength(asset);
+    luaL_loadbuffer(L, buffer, sz, filename);
+    lua_pcall(L, 0, LUA_MULTRET, 0);
+    AAsset_close(asset);
+    
+    return 0;
+}
+
 static void engine_lua_call(struct engine* engine)
 {
     lua_Number result;
     if (!L) {
-        AAssetManager* assetManager = engine->app->activity->assetManager;
-        AAsset* asset = AAssetManager_open(assetManager, "scripts/main.lua", AASSET_MODE_UNKNOWN);
-        off_t start, length;
-        int fd = AAsset_openFileDescriptor(asset, &start, &length);
-        
-        if (fd<0) {
-            LOGW("COULD NOT OPEN FILE DESCRIPTOR");
-        }
-        off_t bufferSize = AAsset_getLength(asset);
-        char * buffer = malloc(bufferSize+1);
-        AAsset_read(asset, buffer, bufferSize);
-        buffer[bufferSize] = 0;
-        LOGI(buffer);
-        AAsset_close(asset);
-
         L = lua_open();
-        luaL_dostring(L, buffer);
-//        luaL_dofile(L, "assets/scripts/main.lua");
+        engine_lua_load(engine, "scripts/main.lua");
     }
     lua_getfield(L, LUA_GLOBALSINDEX, "main"); 
     lua_call(L, 0, 1);
