@@ -1,0 +1,5 @@
+#include "tolua/tolua_event.c"
+#include "tolua/tolua_is.c"
+#include "tolua/tolua_map.c"
+#include "tolua/tolua_push.c"
+#include "tolua/tolua_to.c"
