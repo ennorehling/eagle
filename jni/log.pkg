@@ -1,0 +1,5 @@
+$#include "log.h"
+
+module log {
+    void log_write @ write(int prio, const char * tag, const char *text);
+}

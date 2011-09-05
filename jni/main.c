@@ -27,6 +27,7 @@
 #include <android/log.h>
 #include <android_native_app_glue.h>
 
+#include <tolua++.h>
 #include <lua.h>
 #include <lauxlib.h>
 
@@ -62,6 +63,7 @@ struct engine {
 };
 
 static lua_State * L = 0;
+TOLUA_API int  tolua_log_open (lua_State* tolua_S);
 
 static int engine_lua_load(struct engine* engine, const char * filename)
 {
@@ -87,13 +89,13 @@ static void engine_lua_call(struct engine* engine)
     lua_Number result;
     if (!L) {
         L = lua_open();
+        tolua_log_open(L);
         engine_lua_load(engine, "scripts/main.lua");
     }
     lua_getfield(L, LUA_GLOBALSINDEX, "main"); 
     lua_call(L, 0, 1);
     result = lua_tonumber(L, -1);
     engine->state.angle += result;
-//    engine->state.angle += .01f;
 }
 /**
  * Initialize an EGL context for the current display.
