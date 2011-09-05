@@ -64,6 +64,7 @@ struct engine {
 
 static lua_State * L = 0;
 TOLUA_API int  tolua_log_open (lua_State* tolua_S);
+TOLUA_API int  tolua_gl_open (lua_State* tolua_S);
 
 static int engine_lua_load(struct engine* engine, const char * filename)
 {
@@ -90,6 +91,7 @@ static void engine_lua_call(struct engine* engine)
     if (!L) {
         L = lua_open();
         tolua_log_open(L);
+        tolua_gl_open(L);
         engine_lua_load(engine, "scripts/main.lua");
     }
     lua_getfield(L, LUA_GLOBALSINDEX, "main"); 
