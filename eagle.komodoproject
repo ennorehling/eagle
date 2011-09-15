@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Komodo Project File - DO NOT EDIT -->
 <project id="92ce5b03-00cd-4c94-a741-44681047cca0" kpf_version="5" name="eagle.komodoproject">
+<preference-set idref="92ce5b03-00cd-4c94-a741-44681047cca0">
+  <string relative="path" id="import_dirname"></string>
+  <string id="import_exclude_matches">*.*~;*.bak;*.tmp;CVS;.#*;*.pyo;*.pyc;.svn;_svn;.git;.hg;.bzr;*%*;tmp*.html;.DS_Store;*.swp;*.kpf;*.komodoproject;*.komodotools</string>
+  <string id="import_include_matches"></string>
+  <string id="mappedPaths">android-ndk-include##file:///C:/Google/android-ndk-r6/platforms/android-9/arch-arm/usr/include/</string>
+  <string id="rubyExtraPaths"></string>
+</preference-set>
 </project>
