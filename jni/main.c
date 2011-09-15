@@ -70,12 +70,6 @@ static int engine_lua_load(struct engine* engine, const char * filename)
 {
     AAssetManager* assetManager = engine->app->activity->assetManager;
     AAsset* asset = AAssetManager_open(assetManager, filename, AASSET_MODE_UNKNOWN);
-    off_t start, length;
-    int fd = AAsset_openFileDescriptor(asset, &start, &length);
-    
-    if (fd<0) {
-        LOGW("COULD NOT OPEN FILE DESCRIPTOR");
-    }
     const char * buffer = (const char *)AAsset_getBuffer(asset);
     size_t sz = (size_t)AAsset_getLength(asset);
     luaL_loadbuffer(L, buffer, sz, filename);
