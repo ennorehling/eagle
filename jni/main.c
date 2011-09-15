@@ -48,6 +48,7 @@ struct saved_state {
  */
 struct engine {
     struct android_app* app;
+    struct lua_State* L;
 
     ASensorManager* sensorManager;
     const ASensor* accelerometerSensor;
@@ -62,36 +63,44 @@ struct engine {
     struct saved_state state;
 };
 
-static lua_State * L = 0;
 TOLUA_API int  tolua_log_open (lua_State* tolua_S);
 TOLUA_API int  tolua_gl_open (lua_State* tolua_S);
 
-static int engine_lua_load(struct engine* engine, const char * filename)
+static int engine_lua_loadasset(struct engine* engine, const char * filename)
 {
     AAssetManager* assetManager = engine->app->activity->assetManager;
     AAsset* asset = AAssetManager_open(assetManager, filename, AASSET_MODE_UNKNOWN);
+    
+    if (!asset) {
+        LOGW("COULD NOT OPEN ASSET %s", filename);
+        return -1;
+    }
     const char * buffer = (const char *)AAsset_getBuffer(asset);
     size_t sz = (size_t)AAsset_getLength(asset);
-    luaL_loadbuffer(L, buffer, sz, filename);
-    lua_pcall(L, 0, LUA_MULTRET, 0);
+    luaL_loadbuffer(engine->L, buffer, sz, filename);
+    lua_pcall(engine->L, 0, LUA_MULTRET, 0);
     AAsset_close(asset);
-    
     return 0;
 }
 
-static void engine_lua_call(struct engine* engine)
+static void engine_lua_init(struct engine* engine)
 {
-    lua_Number result;
-    if (!L) {
-        L = lua_open();
-        tolua_log_open(L);
-        tolua_gl_open(L);
-        engine_lua_load(engine, "scripts/main.lua");
-    }
-    lua_getfield(L, LUA_GLOBALSINDEX, "main"); 
-    lua_call(L, 0, 1);
-    result = lua_tonumber(L, -1);
-    engine->state.angle += result;
+    lua_getfield(engine->L, LUA_GLOBALSINDEX, "init");
+    lua_pushnumber(engine->L, engine->width);
+    lua_pushnumber(engine->L, engine->height);
+    lua_call(engine->L, 2, 0);
+}
+
+static void engine_lua_draw(struct engine* engine)
+{
+    lua_getfield(engine->L, LUA_GLOBALSINDEX, "draw");
+    lua_call(engine->L, 0, 0);
+}
+
+static void engine_lua_tick(struct engine* engine)
+{
+    lua_getfield(engine->L, LUA_GLOBALSINDEX, "tick");
+    lua_call(engine->L, 0, 0);
 }
 /**
  * Initialize an EGL context for the current display.
@@ -111,7 +120,7 @@ static int engine_init_display(struct engine* engine) {
             EGL_RED_SIZE, 8,
             EGL_NONE
     };
-    EGLint w, h, dummy, format;
+    EGLint w, h, format;
     EGLint numConfigs;
     EGLConfig config;
     EGLSurface surface;
@@ -158,6 +167,8 @@ static int engine_init_display(struct engine* engine) {
     glShadeModel(GL_SMOOTH);
     glDisable(GL_DEPTH_TEST);
 
+    engine_lua_init(engine);
+
     return 0;
 }
 
@@ -170,11 +181,13 @@ static void engine_draw_frame(struct engine* engine) {
         return;
     }
 
+    engine_lua_draw(engine);
+/*
     // Just fill the screen with a color.
     glClearColor(((float)engine->state.x)/engine->width, engine->state.angle,
             ((float)engine->state.y)/engine->height, 1);
     glClear(GL_COLOR_BUFFER_BIT);
-
+*/
     eglSwapBuffers(engine->display, engine->surface);
 }
 
@@ -288,6 +301,12 @@ void android_main(struct android_app* state) {
         // We are starting with a previous saved state; restore from it.
         engine.state = *(struct saved_state*)state->savedState;
     }
+    
+    /* Lua initialization */
+    engine.L = lua_open();
+    tolua_log_open(engine.L);
+    tolua_gl_open(engine.L);
+    engine_lua_loadasset(&engine, "scripts/main.lua");
 
     // loop waiting for stuff to do.
 
@@ -329,7 +348,7 @@ void android_main(struct android_app* state) {
         }
 
         if (engine.animating) {
-            engine_lua_call(&engine);
+            engine_lua_tick(&engine);
             // Done with events; draw next animation frame.
             // engine.state.angle += .01f;
             if (engine.state.angle > 1) {
